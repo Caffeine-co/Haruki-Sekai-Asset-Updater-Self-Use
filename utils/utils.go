@@ -10,7 +10,11 @@ import (
 )
 
 func GetTimeArg() string {
-	loc, _ := time.LoadLocation("Asia/Tokyo")
+	// loc, _ := time.LoadLocation("Asia/Tokyo")
+	loc, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		loc = time.FixedZone("Asia/Tokyo", 9*60*60)
+	}
 	_time := time.Now().In(loc)
 	timeFormat := _time.Format("20060102150405")
 	return fmt.Sprintf("?t=%s", timeFormat)

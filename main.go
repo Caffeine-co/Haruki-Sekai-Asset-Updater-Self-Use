@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	_ "time/tzdata"
 
 	"haruki-sekai-asset/api"
 	"haruki-sekai-asset/config"
