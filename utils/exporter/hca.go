@@ -31,6 +31,9 @@ func ExportHCA(hcaFile string, outputDir string, convertToMP3 bool, convertToFLA
 	if err != nil {
 		return fmt.Errorf("failed to decode HCA to WAV: %w", err)
 	}
+
+	_ = decoder.Close() // 关闭解码器，释放文件锁
+
 	_ = file.Close()
 	if convertToMP3 {
 		mp3File := filepath.Join(outputDir, baseName+".mp3")
