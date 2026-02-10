@@ -49,7 +49,8 @@ func ExportACB(acbFile string, outputDir string, decodeHCA bool, deleteOriginalW
 	}
 
 	if decodeHCA && len(hcaFiles) > 0 {
-		const maxWorkers = 16
+		// const maxWorkers = 16
+		const maxWorkers = 8
 		var wg sync.WaitGroup
 		semaphore := make(chan struct{}, maxWorkers)
 		errChan := make(chan error, len(hcaFiles))
