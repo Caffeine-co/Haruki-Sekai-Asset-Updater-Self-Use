@@ -2,8 +2,10 @@ package exporter
 
 import (
 	"fmt"
-	"os"
+	// "os"
 	"os/exec"
+
+	"haruki-sekai-asset/utils"
 )
 
 func ConvertPNGToWebP(pngFile string, webpFile string, cwebpPath string) error {
@@ -24,7 +26,8 @@ func ConvertM2VToMP4(m2vFile string, mp4File string, deleteOriginal bool, ffmpeg
 		return fmt.Errorf("failed to convert M2V to MP4: %w", err)
 	}
 	if deleteOriginal {
-		if err := os.Remove(m2vFile); err != nil {
+		// if err := os.Remove(m2vFile); err != nil {
+		if err := utils.RemoveFileWithRetry(m2vFile); err != nil {
 			return fmt.Errorf("failed to delete original M2V file: %w", err)
 		}
 	}
@@ -40,10 +43,11 @@ func ConvertWavToFLAC(wavFile string, flacFile string, deleteOriginal bool, ffmp
 		return fmt.Errorf("failed to convert WAV to FLAC: %w", err)
 	}
 	if deleteOriginal {
-		if _, err := os.Stat(wavFile); err == nil {
-			if err := os.Remove(wavFile); err != nil {
-				return fmt.Errorf("failed to delete original WAV file: %w", err)
-			}
+		// if _, err := os.Stat(wavFile); err == nil {
+			// if err := os.Remove(wavFile); err != nil {
+		if err := utils.RemoveFileWithRetry(wavFile); err != nil {
+			return fmt.Errorf("failed to delete original WAV file: %w", err)
+			// }
 		}
 	}
 	return nil
@@ -57,10 +61,11 @@ func ConvertWavToMP3(wavFile string, mp3File string, deleteOriginal bool, ffmpeg
 		return fmt.Errorf("failed to convert WAV to MP3: %w", err)
 	}
 	if deleteOriginal {
-		if _, err := os.Stat(wavFile); err == nil {
-			if err := os.Remove(wavFile); err != nil {
-				return fmt.Errorf("failed to delete original WAV file: %w", err)
-			}
+		// if _, err := os.Stat(wavFile); err == nil {
+			// if err := os.Remove(wavFile); err != nil {
+		if err := utils.RemoveFileWithRetry(wavFile); err != nil {
+			return fmt.Errorf("failed to delete original WAV file: %w", err)
+			// }
 		}
 	}
 	return nil

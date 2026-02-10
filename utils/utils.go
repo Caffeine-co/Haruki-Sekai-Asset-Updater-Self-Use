@@ -37,3 +37,19 @@ func FindFilesByExtension(dir string, ext string) ([]string, error) {
 	})
 	return files, err
 }
+
+func RemoveFileWithRetry(filePath string) error {
+	maxRetries := 5
+	var err error
+	for i := 0; i < maxRetries; i++ {
+		err = os.Remove(filePath)
+		if err == nil {
+			return nil
+		}
+		if os.IsNotExist(err) {
+			return nil
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+	return fmt.Errorf("failed to remove file after %d attempts: %w", maxRetries, err)
+}
