@@ -4,6 +4,7 @@ import (
 	"haruki-sekai-asset/utils"
 	harukiLogger "haruki-sekai-asset/utils/logger"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -34,14 +35,18 @@ type BackendConfig struct {
 type ToolConfig struct {
 	FFMPEGPath         string `yaml:"ffmpeg_path,omitempty"`
 	AssetStudioCLIPath string `yaml:"asset_studio_cli_path,omitempty"`
-	CwebpPath          string `yaml:"cwebp_path,omitempty"`
 }
 
-type RemoteStorageConfig struct {
-	Type    string   `yaml:"type"`
-	Base    string   `yaml:"base"`
-	Program string   `yaml:"program"`
-	Args    []string `yaml:"args"`
+type S3RemoteStorageConfig struct {
+	Type      string `yaml:"type"`
+	Endpoint  string `yaml:"endpoint"`
+	SSL       bool   `yaml:"ssl"`
+	Bucket    string `yaml:"bucket"`
+	PathStyle bool   `yaml:"path_style"`
+	Region    string `yaml:"region,omitempty"`
+	ACLPublic bool   `yaml:"acl_public,omitempty"`
+	AccessKey string `yaml:"access_key,omitempty"`
+	SecretKey string `yaml:"secret_key,omitempty"`
 }
 
 type Config struct {
@@ -52,15 +57,30 @@ type Config struct {
 	Tools                         ToolConfig                                                            `yaml:"tool,omitempty"`
 	Profiles                      map[utils.HarukiSekaiServerRegion]map[string]string                   `yaml:"profiles,omitempty"`
 	Servers                       map[utils.HarukiSekaiServerRegion]utils.HarukiSekaiAssetUpdaterConfig `yaml:"servers"`
-	RemoteStorages                []RemoteStorageConfig                                                 `yaml:"remote_storages,omitempty"`
+	RemoteStorages                []S3RemoteStorageConfig                                               `yaml:"remote_storages,omitempty"`
 }
 
 var Version = "v4.0.1-dev"
 var Cfg Config
 
+func openConfigFile() (*os.File, error) {
+	candidates := []string{
+		"haruki-asset-configs.yaml",
+		filepath.Join("..", "haruki-asset-configs.yaml"),
+		filepath.Join("..", "..", "haruki-asset-configs.yaml"),
+	}
+	for _, p := range candidates {
+		f, err := os.Open(p)
+		if err == nil {
+			return f, nil
+		}
+	}
+	return nil, os.ErrNotExist
+}
+
 func init() {
 	logger := harukiLogger.NewLogger("ConfigLoader", "DEBUG", nil)
-	f, err := os.Open("haruki-asset-configs.yaml")
+	f, err := openConfigFile()
 	if err != nil {
 		logger.Errorf("Failed to open config file: %v", err)
 		os.Exit(1)
