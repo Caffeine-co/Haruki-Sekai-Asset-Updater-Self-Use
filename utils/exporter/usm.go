@@ -9,7 +9,19 @@ import (
 	"haruki-sekai-asset/utils/cricodecs/usm"
 )
 
-func ExportUSM(usmFile string, outputDir string, convertToMP4 bool, deleteOriginalM2V bool, ffmpegPath string) error {
+func ExportUSM(usmFile string, outputDir string, convertToMP4 bool, directUSMToMP4WithFFmpeg bool, deleteOriginalM2V bool, ffmpegPath string) error {
+	outputName := strings.TrimSuffix(filepath.Base(usmFile), filepath.Ext(usmFile))
+	if convertToMP4 && directUSMToMP4WithFFmpeg {
+		mp4File := filepath.Join(outputDir, outputName+".mp4")
+		if err := ConvertUSMToMP4(usmFile, mp4File, ffmpegPath); err != nil {
+			return fmt.Errorf("failed to convert USM to MP4 directly: %w", err)
+		}
+		if err := os.Remove(usmFile); err != nil {
+			return fmt.Errorf("failed to delete original USM file: %w", err)
+		}
+		return nil
+	}
+
 	var frameRate *FrameRate
 	if numerator, denominator, err := usm.ReadVideoFrameRateFile(usmFile); err == nil && numerator > 0 && denominator > 0 {
 		frameRate = &FrameRate{
@@ -25,7 +37,7 @@ func ExportUSM(usmFile string, outputDir string, convertToMP4 bool, deleteOrigin
 	if convertToMP4 {
 		for _, extractedFile := range extractedFiles {
 			if strings.ToLower(filepath.Ext(extractedFile)) == ".m2v" {
-				mp4File := strings.TrimSuffix(extractedFile, filepath.Ext(extractedFile)) + ".mp4"
+				mp4File := filepath.Join(outputDir, outputName+".mp4")
 				if err := ConvertM2VToMP4(extractedFile, mp4File, deleteOriginalM2V, ffmpegPath, frameRate); err != nil {
 					return fmt.Errorf("failed to convert M2V to MP4: %w", err)
 				}
